@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "title": "Rara Vez",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 165,
+    "plays": 185000000
+  },
+  {
+    "id": 2,
+    "title": "Milagrosa",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 178,
+    "plays": 142000000
+  },
+  {
+    "id": 3,
+    "title": "Morocha",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 172,
+    "plays": 133000000
+  },
+  {
+    "id": 4,
+    "title": "Al Borde",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 181,
+    "plays": 120000000
+  },
+  {
+    "id": 5,
+    "title": "Toi Hecho",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 169,
+    "plays": 118000000
+  },
+  {
+    "id": 6,
+    "title": "No Soy Eterno",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 190,
+    "plays": 99000000
+  },
+  {
+    "id": 7,
+    "title": "Frágil",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 176,
+    "plays": 95000000
+  },
+  {
+    "id": 8,
+    "title": "Desde el Alma",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 184,
+    "plays": 91000000
+  },
+  {
+    "id": 9,
+    "title": "Entre Nosotros",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 173,
+    "plays": 88000000
+  },
+  {
+    "id": 10,
+    "title": "Sin Mirar Atrás",
+    "artist": "Milo J",
+    "album": "111",
+    "genre": "Rap",
+    "year": 2023,
+    "duration_seconds": 167,
+    "plays": 86000000
+  },
+  {
+    "id": 11,
+    "title": "Vida Más Corta",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 158,
+    "plays": 77000000
+  },
+  {
+    "id": 12,
+    "title": "Carta a Mi Yo",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 182,
+    "plays": 72000000
+  },
+  {
+    "id": 13,
+    "title": "Fugaz",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 171,
+    "plays": 69000000
+  },
+  {
+    "id": 14,
+    "title": "Distinto",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 166,
+    "plays": 65000000
+  },
+  {
+    "id": 15,
+    "title": "A Mi Manera",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 174,
+    "plays": 62000000
+  },
+  {
+    "id": 16,
+    "title": "Sin Tiempo",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 168,
+    "plays": 59000000
+  },
+  {
+    "id": 17,
+    "title": "Mi Verdad",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 177,
+    "plays": 56000000
+  },
+  {
+    "id": 18,
+    "title": "Hoy",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 160,
+    "plays": 53000000
+  },
+  {
+    "id": 19,
+    "title": "Recuerdos",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 183,
+    "plays": 50000000
+  },
+  {
+    "id": 20,
+    "title": "Última Vez",
+    "artist": "Milo J",
+    "album": "La Vida Era Más Corta",
+    "genre": "Rap",
+    "year": 2022,
+    "duration_seconds": 175,
+    "plays": 48000000
+  }
+]
