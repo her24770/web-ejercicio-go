@@ -1,0 +1,386 @@
+{
+	"info": {
+		"_postman_id": "f3e5594f-f293-4112-8179-0b5d43961e45",
+		"name": "Ejercicio4_api_json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "52958977",
+		"_collection_link": "https://her24770-6903239.postman.co/workspace/Nandez's-Workspace~fd9c2b3e-0728-4320-85b4-59ca96bb1212/collection/52958977-f3e5594f-f293-4112-8179-0b5d43961e45?action=share&source=collection_link&creator=52958977"
+	},
+	"item": [
+		{
+			"name": "ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/ping",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "songs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "por id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs?id=1",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "por genero",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs?genre=rap",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs"
+					],
+					"query": [
+						{
+							"key": "genre",
+							"value": "rap"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "mas de un parametro",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs?artist=milo j&year=2023",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs"
+					],
+					"query": [
+						{
+							"key": "artist",
+							"value": "milo j"
+						},
+						{
+							"key": "year",
+							"value": "2023"
+						},
+						{
+							"key": "s",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "id directo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs/3",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "agregar",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Anti-Hero\",\n  \"artist\": \"Taylor Swift\",\n  \"album\": \"Midnights\",\n  \"genre\": \"Pop\",\n  \"year\": 2022,\n  \"duration_seconds\": 200,\n  \"plays\": 3000000000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reemplzar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n        \"title\": \"Olimpo\",\n        \"artist\": \"Milo J\",\n        \"album\": \"166\",\n        \"genre\": \"Trap\",\n        \"year\": 2022,\n        \"duration_seconds\": 170,\n        \"plays\": 142000003\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs/21",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs",
+						"21"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "editar",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n        \"title\": \"Olimpo\",\n        \"artist\": \"Milo J\",\n        \"album\": \"166\",\n        \"genre\": \"Trap\",\n        \"year\": 2022,\n        \"duration_seconds\": 170,\n        \"plays\": 142000003\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs/21",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs",
+						"21"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eliminar",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs/11",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs",
+						"11"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "error no existe",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs/999",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs",
+						"999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "error datos incompletos",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Anti-Hero\",\n  \"artist\": \"Taylor Swift\",\n  \"duration_seconds\": 200,\n  \"plays\": 3000000000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://uvg.jhgo.online/web/ejercicio4_api_json/api/songs",
+					"protocol": "https",
+					"host": [
+						"uvg",
+						"jhgo",
+						"online"
+					],
+					"path": [
+						"web",
+						"ejercicio4_api_json",
+						"api",
+						"songs"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
