@@ -9,9 +9,7 @@ import (
 	"strings"
 )
 
-
-// Modelos de objetos
-
+// Canción representa una entrada en el catálogo musical
 type Song struct {
 	ID              int    `json:"id"`
 	Title           string `json:"title"`
@@ -23,92 +21,73 @@ type Song struct {
 	Plays           int64  `json:"plays"`
 }
 
+// Cuando algo sale mal, respondemos con esta estructura
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 
-// -------------------------
-// In-memory store
-// -------------------------
-
 var songs []Song
 
-const dataFile = "./data/songs.json"
-
-// -------------------------
-// Entry point
-// -------------------------
+const archivoData = "./data/songs.json"
 
 func main() {
-	loadSongs()
+	cargarCanciones()
 
 	http.HandleFunc("/api/ping", pingHandler)
 	http.HandleFunc("/api/songs", songsHandler)
-	http.HandleFunc("/api/songs/", songByIDHandler)
+	http.HandleFunc("/api/songs/", songPorIDHandler)
 
-	log.Println("Music API running on :24770")
+	log.Println("Servidor corriendo en el puerto :24770")
 	log.Fatal(http.ListenAndServe(":24770", nil))
 }
 
-// -------------------------
-// Load / Save
-// -------------------------
-
-func loadSongs() {
-	file, err := os.ReadFile(dataFile)
+// Lee el archivo JSON y carga las canciones en memoria al iniciar
+func cargarCanciones() {
+	contenido, err := os.ReadFile(archivoData)
 	if err != nil {
-		log.Fatal("Error reading songs file:", err)
+		log.Fatal("No se pudo leer el archivo de canciones:", err)
 	}
-	if err := json.Unmarshal(file, &songs); err != nil {
-		log.Fatal("Error parsing songs JSON:", err)
+
+	if err := json.Unmarshal(contenido, &songs); err != nil {
+		log.Fatal("Error al parsear el JSON:", err)
 	}
-	log.Printf("Loaded %d songs from %s", len(songs), dataFile)
+
+	log.Printf("%d canciones cargadas correctamente", len(songs))
 }
 
-func saveSongs() {
+// Guarda el estado actual de las canciones de vuelta al archivo
+func guardarCanciones() {
 	data, err := json.MarshalIndent(songs, "", "  ")
 	if err != nil {
-		log.Println("Error marshaling songs:", err)
+		log.Println("Error al convertir canciones a JSON:", err)
 		return
 	}
-	if err := os.WriteFile(dataFile, data, 0644); err != nil {
-		log.Println("Error writing songs file:", err)
+
+	if err := os.WriteFile(archivoData, data, 0644); err != nil {
+		log.Println("Error al guardar el archivo:", err)
 	}
 }
 
-// -------------------------
-// Helpers
-// -------------------------
-
-func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
+// Escribe la respuesta en formato JSON con el status indicado
+func responderJSON(w http.ResponseWriter, status int, datos interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(payload); err != nil {
-		log.Println("Error encoding response:", err)
-	}
+	json.NewEncoder(w).Encode(datos)
 }
 
-func writeError(w http.ResponseWriter, status int, message string) {
-	writeJSON(w, status, ErrorResponse{
+// Responde con un error estructurado en JSON
+func responderError(w http.ResponseWriter, status int, mensaje string) {
+	responderJSON(w, status, ErrorResponse{
 		Error:   http.StatusText(status),
 		Code:    status,
-		Message: message,
+		Message: mensaje,
 	})
 }
 
-func generateNextID() int {
-	maxID := 0
-	for _, s := range songs {
-		if s.ID > maxID {
-			maxID = s.ID
-		}
-	}
-	return maxID + 1
-}
-
-func findSongIndex(id int) int {
+// Busca el índice de una canción por su ID, retorna -1 si no existe
+func buscarIndice(id int) int {
 	for i, s := range songs {
 		if s.ID == id {
 			return i
@@ -117,299 +96,268 @@ func findSongIndex(id int) int {
 	return -1
 }
 
-// -------------------------
-// Handlers
-// -------------------------
-
-func pingHandler(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]string{"message": "pong"})
+// Genera el siguiente ID disponible basándose en el mayor existente
+func siguienteID() int {
+	max := 0
+	for _, s := range songs {
+		if s.ID > max {
+			max = s.ID
+		}
+	}
+	return max + 1
 }
 
-// /api/songs  →  GET (list + filters) | POST (create)
+// Verifica que el servidor esté activo
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	responderJSON(w, http.StatusOK, map[string]string{"mensaje": "pong"})
+}
+
+// Enruta /api/songs según el método HTTP recibido
 func songsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		handleGetSongs(w, r)
+		listarCanciones(w, r)
 	case http.MethodPost:
-		handleCreateSong(w, r)
+		crearCancion(w, r)
 	default:
-		writeError(w, http.StatusMethodNotAllowed, "Method not allowed. Supported: GET, POST")
+		responderError(w, http.StatusMethodNotAllowed, "Método no permitido")
 	}
 }
 
-// /api/songs/{id}  →  GET | PUT | PATCH | DELETE
-func songByIDHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract ID from path: /api/songs/3
-	pathParts := strings.Split(strings.TrimPrefix(r.URL.Path, "/api/songs/"), "/")
-	if len(pathParts) == 0 || pathParts[0] == "" {
-		writeError(w, http.StatusBadRequest, "Missing song ID in path")
+// Enruta /api/songs/{id} según el método HTTP recibido
+func songPorIDHandler(w http.ResponseWriter, r *http.Request) {
+	segmento := strings.TrimPrefix(r.URL.Path, "/api/songs/")
+	if segmento == "" {
+		responderError(w, http.StatusBadRequest, "Falta el ID en la ruta")
 		return
 	}
 
-	id, err := strconv.Atoi(pathParts[0])
+	id, err := strconv.Atoi(segmento)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid song ID: must be a number")
+		responderError(w, http.StatusBadRequest, "El ID debe ser un número entero")
 		return
 	}
 
 	switch r.Method {
 	case http.MethodGet:
-		handleGetSongByID(w, r, id)
+		obtenerCancion(w, r, id)
 	case http.MethodPut:
-		handleUpdateSong(w, r, id)
+		reemplazarCancion(w, r, id)
 	case http.MethodPatch:
-		handlePatchSong(w, r, id)
+		actualizarCancion(w, r, id)
 	case http.MethodDelete:
-		handleDeleteSong(w, r, id)
+		eliminarCancion(w, r, id)
 	default:
-		writeError(w, http.StatusMethodNotAllowed, "Method not allowed. Supported: GET, PUT, PATCH, DELETE")
+		responderError(w, http.StatusMethodNotAllowed, "Método no permitido")
 	}
 }
 
-// -------------------------
-// GET /api/songs
-// Filters: ?id=1  ?genre=Pop  ?artist=Adele  ?year=2019
-// Combinable: ?genre=Soul&year=2010
-// -------------------------
-
-func handleGetSongs(w http.ResponseWriter, r *http.Request) {
+// Devuelve todas las canciones, con soporte para filtros opcionales por género, artista y año
+func listarCanciones(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
-	// Legacy ?id= query param support
+	// Soporte para buscar por ?id=
 	if idParam := q.Get("id"); idParam != "" {
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
-			writeError(w, http.StatusBadRequest, "Invalid id parameter: must be a number")
+			responderError(w, http.StatusBadRequest, "El parámetro id debe ser un número")
 			return
 		}
-		idx := findSongIndex(id)
+		idx := buscarIndice(id)
 		if idx == -1 {
-			writeError(w, http.StatusNotFound, "Song with id "+idParam+" not found")
+			responderError(w, http.StatusNotFound, "No se encontró la canción con id "+idParam)
 			return
 		}
-		writeJSON(w, http.StatusOK, songs[idx])
+		responderJSON(w, http.StatusOK, songs[idx])
 		return
 	}
 
-	// Multi-filter support
-	genreFilter := strings.ToLower(q.Get("genre"))
-	artistFilter := strings.ToLower(q.Get("artist"))
-	yearFilter := q.Get("year")
+	genero := strings.ToLower(q.Get("genre"))
+	artista := strings.ToLower(q.Get("artist"))
+	anioParam := q.Get("year")
 
-	var yearVal int
-	if yearFilter != "" {
-		y, err := strconv.Atoi(yearFilter)
+	var anio int
+	if anioParam != "" {
+		a, err := strconv.Atoi(anioParam)
 		if err != nil {
-			writeError(w, http.StatusBadRequest, "Invalid year parameter: must be a number")
+			responderError(w, http.StatusBadRequest, "El parámetro year debe ser un número")
 			return
 		}
-		yearVal = y
+		anio = a
 	}
 
-	result := []Song{}
+	resultado := []Song{}
 	for _, s := range songs {
-		if genreFilter != "" && !strings.Contains(strings.ToLower(s.Genre), genreFilter) {
+		if genero != "" && !strings.Contains(strings.ToLower(s.Genre), genero) {
 			continue
 		}
-		if artistFilter != "" && !strings.Contains(strings.ToLower(s.Artist), artistFilter) {
+		if artista != "" && !strings.Contains(strings.ToLower(s.Artist), artista) {
 			continue
 		}
-		if yearFilter != "" && s.Year != yearVal {
+		if anioParam != "" && s.Year != anio {
 			continue
 		}
-		result = append(result, s)
+		resultado = append(resultado, s)
 	}
 
-	writeJSON(w, http.StatusOK, result)
+	responderJSON(w, http.StatusOK, resultado)
 }
 
-// -------------------------
-// GET /api/songs/{id}
-// -------------------------
-
-func handleGetSongByID(w http.ResponseWriter, r *http.Request, id int) {
-	idx := findSongIndex(id)
+// Devuelve una sola canción buscada por su ID en la ruta
+func obtenerCancion(w http.ResponseWriter, r *http.Request, id int) {
+	idx := buscarIndice(id)
 	if idx == -1 {
-		writeError(w, http.StatusNotFound, "Song with id "+strconv.Itoa(id)+" not found")
+		responderError(w, http.StatusNotFound, "No se encontró la canción con id "+strconv.Itoa(id))
 		return
 	}
-	writeJSON(w, http.StatusOK, songs[idx])
+	responderJSON(w, http.StatusOK, songs[idx])
 }
 
-// -------------------------
-// POST /api/songs
-// -------------------------
-
-func handleCreateSong(w http.ResponseWriter, r *http.Request) {
-	var input Song
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid JSON body: "+err.Error())
-		return
+// Valida los campos obligatorios de una canción y devuelve los errores encontrados
+func validarCancion(s Song) []string {
+	var errores []string
+	if strings.TrimSpace(s.Title) == "" {
+		errores = append(errores, "title")
 	}
-
-	// Validation
-	var missing []string
-	if strings.TrimSpace(input.Title) == "" {
-		missing = append(missing, "title")
+	if strings.TrimSpace(s.Artist) == "" {
+		errores = append(errores, "artist")
 	}
-	if strings.TrimSpace(input.Artist) == "" {
-		missing = append(missing, "artist")
+	if strings.TrimSpace(s.Album) == "" {
+		errores = append(errores, "album")
 	}
-	if strings.TrimSpace(input.Album) == "" {
-		missing = append(missing, "album")
+	if strings.TrimSpace(s.Genre) == "" {
+		errores = append(errores, "genre")
 	}
-	if strings.TrimSpace(input.Genre) == "" {
-		missing = append(missing, "genre")
+	if s.Year < 1900 || s.Year > 2100 {
+		errores = append(errores, "year (debe estar entre 1900 y 2100)")
 	}
-	if input.Year < 1900 || input.Year > 2100 {
-		missing = append(missing, "year (must be between 1900 and 2100)")
+	if s.DurationSeconds <= 0 {
+		errores = append(errores, "duration_seconds (debe ser mayor a 0)")
 	}
-	if input.DurationSeconds <= 0 {
-		missing = append(missing, "duration_seconds (must be > 0)")
-	}
-	if len(missing) > 0 {
-		writeError(w, http.StatusBadRequest, "Missing or invalid fields: "+strings.Join(missing, ", "))
-		return
-	}
-
-	input.ID = generateNextID()
-	songs = append(songs, input)
-	saveSongs()
-
-	writeJSON(w, http.StatusCreated, input)
+	return errores
 }
 
-// -------------------------
-// PUT /api/songs/{id}  (full replace)
-// -------------------------
+// Crea una nueva canción a partir del body JSON y la guarda en el archivo
+func crearCancion(w http.ResponseWriter, r *http.Request) {
+	var nueva Song
+	if err := json.NewDecoder(r.Body).Decode(&nueva); err != nil {
+		responderError(w, http.StatusBadRequest, "El body no es un JSON válido")
+		return
+	}
 
-func handleUpdateSong(w http.ResponseWriter, r *http.Request, id int) {
-	idx := findSongIndex(id)
+	if errores := validarCancion(nueva); len(errores) > 0 {
+		responderError(w, http.StatusBadRequest, "Campos inválidos o faltantes: "+strings.Join(errores, ", "))
+		return
+	}
+
+	nueva.ID = siguienteID()
+	songs = append(songs, nueva)
+	guardarCanciones()
+
+	responderJSON(w, http.StatusCreated, nueva)
+}
+
+// Reemplaza todos los datos de una canción existente
+func reemplazarCancion(w http.ResponseWriter, r *http.Request, id int) {
+	idx := buscarIndice(id)
 	if idx == -1 {
-		writeError(w, http.StatusNotFound, "Song with id "+strconv.Itoa(id)+" not found")
+		responderError(w, http.StatusNotFound, "No se encontró la canción con id "+strconv.Itoa(id))
 		return
 	}
 
-	var input Song
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid JSON body: "+err.Error())
+	var datos Song
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		responderError(w, http.StatusBadRequest, "El body no es un JSON válido")
 		return
 	}
 
-	// Validation
-	var missing []string
-	if strings.TrimSpace(input.Title) == "" {
-		missing = append(missing, "title")
-	}
-	if strings.TrimSpace(input.Artist) == "" {
-		missing = append(missing, "artist")
-	}
-	if strings.TrimSpace(input.Album) == "" {
-		missing = append(missing, "album")
-	}
-	if strings.TrimSpace(input.Genre) == "" {
-		missing = append(missing, "genre")
-	}
-	if input.Year < 1900 || input.Year > 2100 {
-		missing = append(missing, "year (must be between 1900 and 2100)")
-	}
-	if input.DurationSeconds <= 0 {
-		missing = append(missing, "duration_seconds (must be > 0)")
-	}
-	if len(missing) > 0 {
-		writeError(w, http.StatusBadRequest, "Missing or invalid fields: "+strings.Join(missing, ", "))
+	if errores := validarCancion(datos); len(errores) > 0 {
+		responderError(w, http.StatusBadRequest, "Campos inválidos o faltantes: "+strings.Join(errores, ", "))
 		return
 	}
 
-	input.ID = id
-	songs[idx] = input
-	saveSongs()
+	datos.ID = id
+	songs[idx] = datos
+	guardarCanciones()
 
-	writeJSON(w, http.StatusOK, songs[idx])
+	responderJSON(w, http.StatusOK, songs[idx])
 }
 
-// -------------------------
-// PATCH /api/songs/{id}  (partial update)
-// -------------------------
-
-func handlePatchSong(w http.ResponseWriter, r *http.Request, id int) {
-	idx := findSongIndex(id)
+// Actualiza solo los campos enviados sin tocar el resto
+func actualizarCancion(w http.ResponseWriter, r *http.Request, id int) {
+	idx := buscarIndice(id)
 	if idx == -1 {
-		writeError(w, http.StatusNotFound, "Song with id "+strconv.Itoa(id)+" not found")
+		responderError(w, http.StatusNotFound, "No se encontró la canción con id "+strconv.Itoa(id))
 		return
 	}
 
-	// Decode into a map to allow partial fields
-	var fields map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&fields); err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid JSON body: "+err.Error())
+	var campos map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&campos); err != nil {
+		responderError(w, http.StatusBadRequest, "El body no es un JSON válido")
 		return
 	}
 
-	song := songs[idx]
+	cancion := songs[idx]
 
-	if v, ok := fields["title"].(string); ok {
+	if v, ok := campos["title"].(string); ok {
 		if strings.TrimSpace(v) == "" {
-			writeError(w, http.StatusBadRequest, "title cannot be empty")
+			responderError(w, http.StatusBadRequest, "El título no puede estar vacío")
 			return
 		}
-		song.Title = v
+		cancion.Title = v
 	}
-	if v, ok := fields["artist"].(string); ok {
+	if v, ok := campos["artist"].(string); ok {
 		if strings.TrimSpace(v) == "" {
-			writeError(w, http.StatusBadRequest, "artist cannot be empty")
+			responderError(w, http.StatusBadRequest, "El artista no puede estar vacío")
 			return
 		}
-		song.Artist = v
+		cancion.Artist = v
 	}
-	if v, ok := fields["album"].(string); ok {
-		song.Album = v
+	if v, ok := campos["album"].(string); ok {
+		cancion.Album = v
 	}
-	if v, ok := fields["genre"].(string); ok {
-		song.Genre = v
+	if v, ok := campos["genre"].(string); ok {
+		cancion.Genre = v
 	}
-	if v, ok := fields["year"].(float64); ok {
-		y := int(v)
-		if y < 1900 || y > 2100 {
-			writeError(w, http.StatusBadRequest, "year must be between 1900 and 2100")
+	if v, ok := campos["year"].(float64); ok {
+		a := int(v)
+		if a < 1900 || a > 2100 {
+			responderError(w, http.StatusBadRequest, "El año debe estar entre 1900 y 2100")
 			return
 		}
-		song.Year = y
+		cancion.Year = a
 	}
-	if v, ok := fields["duration_seconds"].(float64); ok {
+	if v, ok := campos["duration_seconds"].(float64); ok {
 		if int(v) <= 0 {
-			writeError(w, http.StatusBadRequest, "duration_seconds must be > 0")
+			responderError(w, http.StatusBadRequest, "La duración debe ser mayor a 0")
 			return
 		}
-		song.DurationSeconds = int(v)
+		cancion.DurationSeconds = int(v)
 	}
-	if v, ok := fields["plays"].(float64); ok {
-		song.Plays = int64(v)
+	if v, ok := campos["plays"].(float64); ok {
+		cancion.Plays = int64(v)
 	}
 
-	songs[idx] = song
-	saveSongs()
+	songs[idx] = cancion
+	guardarCanciones()
 
-	writeJSON(w, http.StatusOK, songs[idx])
+	responderJSON(w, http.StatusOK, songs[idx])
 }
 
-// -------------------------
-// DELETE /api/songs/{id}
-// -------------------------
-
-func handleDeleteSong(w http.ResponseWriter, r *http.Request, id int) {
-	idx := findSongIndex(id)
+// Elimina una canción por su ID y guarda los cambios
+func eliminarCancion(w http.ResponseWriter, r *http.Request, id int) {
+	idx := buscarIndice(id)
 	if idx == -1 {
-		writeError(w, http.StatusNotFound, "Song with id "+strconv.Itoa(id)+" not found")
+		responderError(w, http.StatusNotFound, "No se encontró la canción con id "+strconv.Itoa(id))
 		return
 	}
 
-	deleted := songs[idx]
+	eliminada := songs[idx]
 	songs = append(songs[:idx], songs[idx+1:]...)
-	saveSongs()
+	guardarCanciones()
 
-	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"message": "Song deleted successfully",
-		"deleted": deleted,
+	responderJSON(w, http.StatusOK, map[string]interface{}{
+		"mensaje":   "Canción eliminada correctamente",
+		"eliminada": eliminada,
 	})
 }
